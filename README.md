@@ -1,2 +1,3 @@
 # odin-tictactoe
-A practice project from theodingproject.com
+
+A practice project from theodinproject.com
