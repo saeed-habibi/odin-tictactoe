@@ -1,3 +1,13 @@
+// HTML Handles
+const infoBarHandle = document.querySelector(".info-bar");
+const gameBoardHandle = document.querySelector(".game-board");
+const sideBarHandle = document.querySelector(".side-bar");
+const playerXNameHandle = document.querySelector(".player-x-name");
+const playerONameHandle = document.querySelector(".player-o-name");
+const inputFormHandle = document.querySelector(".input-form");
+const playerXNameInputHandle = document.querySelector("#player-x-name-input");
+const playerONameInputHandle = document.querySelector("#player-o-name-input");
+
 const gameBoard = (function () {
   const board = ["E", "E", "E", "E", "E", "E", "E", "E", "E"];
 
@@ -57,13 +67,10 @@ const players = (function () {
 })();
 
 const turn = (function () {
-  let turn;
+  let turn = "X";
 
-  function setTurn(char) {
-    if (char !== "X" && char !== "O") {
-      return Error("Wrong char, please enter X or O");
-    }
-    turn = char;
+  function switchTurn() {
+    turn = turn === "X" ? "O" : "X";
   }
 
   function getTurn() {
@@ -73,7 +80,74 @@ const turn = (function () {
     return turn;
   }
 
-  return { setTurn, getTurn };
+  return { switchTurn, getTurn };
 })();
 
-const game = (function () {})();
+const gameUI = (function () {
+  // if the game is started, disable the inputs
+  // otherwise disable the game board
+  // state can be either 0 or 1
+  function setGameState(state) {
+    if (state === 0) {
+      infoBarHandle.classList.add("disabled");
+      gameBoardHandle.classList.add("disabled");
+      sideBarHandle.classList.remove("disabled");
+    } else if (state === 1) {
+      infoBarHandle.classList.remove("disabled");
+      gameBoardHandle.classList.remove("disabled");
+      sideBarHandle.classList.add("disabled");
+    }
+  }
+
+  function setPlayersDisplay(playerXName, playerOName) {
+    playerXNameHandle.textContent = `X: ${playerXName}`;
+    playerONameHandle.textContent = `O: ${playerOName}`;
+  }
+
+  return { setGameState, setPlayersDisplay };
+})();
+
+const game = (function () {
+  function startGame(playerXName, playerOName) {
+    players.createPlayerX(playerXName);
+    players.createPlayerO(playerOName);
+
+    gameUI.setPlayersDisplay(
+      players.getPlayerX().name,
+      players.getPlayerO().name
+    );
+    gameUI.setGameState(1);
+  }
+
+  function place(target) {
+    if (target.classList.contains("cell")) {
+      if (target.textContent === "X" || target.textContent === "O") return;
+
+      const gameTurn = turn.getTurn();
+      target.textContent = gameTurn;
+      turn.switchTurn();
+    }
+  }
+
+  function reset() {}
+
+  return { startGame, place, reset };
+})();
+
+// Event Listeners
+inputFormHandle.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const playerXName = playerXNameInputHandle.value;
+  const playerOName = playerONameInputHandle.value;
+
+  if (playerXName && playerOName) {
+    game.startGame(playerXName, playerOName);
+  }
+});
+
+gameBoardHandle.addEventListener("click", (e) => {
+  game.place(e.target);
+});
+
+// run at page load
+gameUI.setGameState(0);
