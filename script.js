@@ -28,17 +28,52 @@ const gameBoard = (function () {
 })();
 
 function makePlayer(name, char) {
-  let isWinner = false;
-
-  function win() {
-    isWinner = true;
-  }
-
-  return { name, char, win };
+  return { name, char };
 }
 
-const game = (function () {
-  let isGameOver = false;
+const players = (function () {
+  let playerX;
+  let playerO;
 
-  function createPlayerX(name) {}
+  function createPlayerX(name) {
+    playerX = makePlayer(name, "X");
+  }
+
+  function createPlayerO(name) {
+    playerO = makePlayer(name, "O");
+  }
+
+  function getPlayerX() {
+    if (!playerX) return Error("Player X hasn't been created yet");
+    return playerX;
+  }
+
+  function getPlayerO() {
+    if (!playerO) return Error("Player O hasn't been created yet");
+    return playerO;
+  }
+
+  return { createPlayerX, createPlayerO, getPlayerX, getPlayerO };
 })();
+
+const turn = (function () {
+  let turn;
+
+  function setTurn(char) {
+    if (char !== "X" && char !== "O") {
+      return Error("Wrong char, please enter X or O");
+    }
+    turn = char;
+  }
+
+  function getTurn() {
+    if (!turn) {
+      return Error("It's no one's turn!");
+    }
+    return turn;
+  }
+
+  return { setTurn, getTurn };
+})();
+
+const game = (function () {})();
