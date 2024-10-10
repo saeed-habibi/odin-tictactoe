@@ -10,13 +10,12 @@
   <body>
     <div class="wrapper">
       <section class="info-bar">
-        <div class="player-x">X: John</div>
-        <div class="player-o">O: Doe</div>
-        <div class="reset">
-          <button type="button" class="reset-button">Reset</button>
-        </div>
+        <div class="player-x"></div>
+        <div class="player-o"></div>
+        <button type="button" class="reset-button">Reset</button>
       </section>
       <main class="game-board">
+        <div class="cell cell-0"></div>
         <div class="cell cell-1"></div>
         <div class="cell cell-2"></div>
         <div class="cell cell-3"></div>
@@ -25,15 +24,24 @@
         <div class="cell cell-6"></div>
         <div class="cell cell-7"></div>
         <div class="cell cell-8"></div>
-        <div class="cell cell-9"></div>
       </main>
       <aside class="side-bar">
         <form action="#" class="input-form">
           <label for="player-x-name">Player X Name</label>
-          <input type="text" name="player-x-name" id="player-x-name" />
+          <input
+            type="text"
+            name="player-x-name"
+            id="player-x-name"
+            autocomplete="off"
+          />
 
           <label for="player-o-name">Player O Name</label>
-          <input type="text" name="player-o-name" id="player-o-name" />
+          <input
+            type="text"
+            name="player-o-name"
+            id="player-o-name"
+            autocomplete="off"
+          />
 
           <button type="submit" class="start-button">Start Game</button>
         </form>
