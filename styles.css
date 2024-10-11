@@ -59,6 +59,16 @@ button {
   font-weight: bold;
 }
 
+.player-x-name,
+.player-o-name {
+  padding: 10px;
+  border-radius: 20px;
+}
+
+.info-bar > .active {
+  background-color: var(--color-blue);
+}
+
 .reset-button {
   font-size: 30px;
   padding: 10px 30px;

@@ -7,34 +7,24 @@ const playerONameHandle = document.querySelector(".player-o-name");
 const inputFormHandle = document.querySelector(".input-form");
 const playerXNameInputHandle = document.querySelector("#player-x-name-input");
 const playerONameInputHandle = document.querySelector("#player-o-name-input");
+const resetButtonHandle = document.querySelector(".reset-button");
 
 const gameBoard = (function () {
-  const board = ["E", "E", "E", "E", "E", "E", "E", "E", "E"];
+  let board = ["", "", "", "", "", "", "", "", ""];
 
-  function setX(index) {
-    if (index < 0 || index > 8) {
-      console.error("Index out of range.");
-      return;
-    }
-    board[index] = "X";
+  function setCell(index, char) {
+    board[index] = char;
   }
 
-  function setO(index) {
-    if (index < 0 || index > 8) {
-      console.error("Index out of range.");
-      return;
-    }
-    board[index] = "O";
+  function getBoard() {
+    return board;
   }
 
-  function printBoard() {
-    console.log(board);
-  }
   function reset() {
-    board = [["E", "E", "E", "E", "E", "E", "E", "E", "E"]];
+    board = ["", "", "", "", "", "", "", "", ""];
   }
 
-  return { setX, setO, printBoard, reset };
+  return { setCell, getBoard, reset };
 })();
 
 function makePlayer(name, char) {
@@ -44,46 +34,46 @@ function makePlayer(name, char) {
 const players = (function () {
   let playerX;
   let playerO;
+  let activePlayer;
 
-  function createPlayerX(name) {
-    playerX = makePlayer(name, "X");
+  function createPlayer(char, name) {
+    if (char === "X") playerX = makePlayer(name, "X");
+    if (char === "O") playerO = makePlayer(name, "O");
   }
 
-  function createPlayerO(name) {
-    playerO = makePlayer(name, "O");
+  function getPlayer(char) {
+    if (char === "X") return playerX;
+    if (char === "O") return playerO;
   }
 
-  function getPlayerX() {
-    if (!playerX) return Error("Player X hasn't been created yet");
-    return playerX;
+  function getActivePlayer() {
+    return activePlayer;
   }
 
-  function getPlayerO() {
-    if (!playerO) return Error("Player O hasn't been created yet");
-    return playerO;
-  }
-
-  return { createPlayerX, createPlayerO, getPlayerX, getPlayerO };
-})();
-
-const turn = (function () {
-  let turn = "X";
-
-  function switchTurn() {
-    turn = turn === "X" ? "O" : "X";
-  }
-
-  function getTurn() {
-    if (!turn) {
-      return Error("It's no one's turn!");
+  function toggleActivePlayer() {
+    if (activePlayer === playerX) {
+      activePlayer = playerO;
+    } else {
+      activePlayer = playerX;
     }
-    return turn;
   }
 
-  return { switchTurn, getTurn };
+  function reset() {
+    playerX = null;
+    playerO = null;
+    activePlayer = null;
+  }
+
+  return {
+    createPlayer,
+    getPlayer,
+    getActivePlayer,
+    toggleActivePlayer,
+    reset,
+  };
 })();
 
-const gameUI = (function () {
+const displayController = (function () {
   // if the game is started, disable the inputs
   // otherwise disable the game board
   // state can be either 0 or 1
@@ -104,32 +94,84 @@ const gameUI = (function () {
     playerONameHandle.textContent = `O: ${playerOName}`;
   }
 
-  return { setGameState, setPlayersDisplay };
+  function toggleActivePlayer() {
+    const activePlayer = players.getActivePlayer();
+    if (activePlayer === players.getPlayer("X")) {
+      playerONameHandle.classList.remove("active");
+      playerXNameHandle.classList.add("active");
+    } else if (activePlayer === players.getPlayer("O")) {
+      playerXNameHandle.classList.remove("active");
+      playerONameHandle.classList.add("active");
+    }
+  }
+
+  function updateBoard() {
+    for (let i = 0; i < 9; i++) {
+      gameBoardHandle.children[i].textContent = gameBoard.getBoard()[i];
+    }
+  }
+
+  function clearInputs() {
+    playerXNameInputHandle.value = "";
+    playerONameInputHandle.value = "";
+  }
+
+  function reset() {
+    playerXNameHandle.textContent = "";
+    playerONameHandle.textContent = "";
+
+    for (let i = 0; i < 9; i++) {
+      gameBoardHandle.children[i].textContent = "";
+    }
+
+    playerXNameHandle.classList.remove("active");
+    playerONameHandle.classList.remove("active");
+    setGameState(0);
+  }
+
+  return {
+    setGameState,
+    setPlayersDisplay,
+    toggleActivePlayer,
+    updateBoard,
+    clearInputs,
+    reset,
+  };
 })();
 
 const game = (function () {
   function startGame(playerXName, playerOName) {
-    players.createPlayerX(playerXName);
-    players.createPlayerO(playerOName);
+    players.createPlayer("X", playerXName);
+    players.createPlayer("O", playerOName);
 
-    gameUI.setPlayersDisplay(
-      players.getPlayerX().name,
-      players.getPlayerO().name
+    displayController.setPlayersDisplay(
+      players.getPlayer("X").name,
+      players.getPlayer("O").name
     );
-    gameUI.setGameState(1);
+    displayController.setGameState(1);
+    players.toggleActivePlayer();
+    displayController.toggleActivePlayer();
+    displayController.clearInputs();
   }
 
   function place(target) {
-    if (target.classList.contains("cell")) {
-      if (target.textContent === "X" || target.textContent === "O") return;
+    if (!target.classList.contains("cell")) return;
+    if (target.textContent === "X" || target.textContent === "O") return;
 
-      const gameTurn = turn.getTurn();
-      target.textContent = gameTurn;
-      turn.switchTurn();
-    }
+    const cellIndex = Number(target.classList[1].match(/cell-(\d)/)[1]);
+    const activePlayerChar = players.getActivePlayer().char;
+
+    gameBoard.setCell(cellIndex, activePlayerChar);
+    displayController.updateBoard();
+    players.toggleActivePlayer();
+    displayController.toggleActivePlayer();
   }
 
-  function reset() {}
+  function reset() {
+    gameBoard.reset();
+    players.reset();
+    displayController.reset();
+  }
 
   return { startGame, place, reset };
 })();
@@ -149,5 +191,7 @@ gameBoardHandle.addEventListener("click", (e) => {
   game.place(e.target);
 });
 
+resetButtonHandle.addEventListener("click", game.reset);
+
 // run at page load
-gameUI.setGameState(0);
+displayController.setGameState(0);
