@@ -20,11 +20,41 @@ const gameBoard = (function () {
     return board;
   }
 
+  function checkWin() {
+    const matches = [
+      [board[0], board[1], board[2]],
+      [board[3], board[4], board[5]],
+      [board[6], board[7], board[8]],
+      [board[0], board[3], board[6]],
+      [board[1], board[4], board[7]],
+      [board[2], board[5], board[8]],
+      [board[0], board[4], board[8]],
+      [board[2], board[4], board[6]],
+    ];
+
+    matches.forEach((match) => {
+      if (match[0] === "X" && match[1] === "X" && match[2] === "X") {
+        players.setWinner(players.getPlayer("X"));
+      } else if (match[0] === "O" && match[1] === "O" && match[2] === "O") {
+        players.setWinner(players.getPlayer("O"));
+      }
+    });
+  }
+
+  function checkDraw() {
+    for (let cell of board) {
+      if (cell === "") {
+        return;
+      }
+    }
+    displayController.setDraw();
+  }
+
   function reset() {
     board = ["", "", "", "", "", "", "", "", ""];
   }
 
-  return { setCell, getBoard, reset };
+  return { setCell, getBoard, checkWin, checkDraw, reset };
 })();
 
 function makePlayer(name, char) {
@@ -35,6 +65,7 @@ const players = (function () {
   let playerX;
   let playerO;
   let activePlayer;
+  let winner;
 
   function createPlayer(char, name) {
     if (char === "X") playerX = makePlayer(name, "X");
@@ -58,10 +89,19 @@ const players = (function () {
     }
   }
 
+  function setWinner(player) {
+    winner = player;
+  }
+
+  function getWinner() {
+    return winner;
+  }
+
   function reset() {
     playerX = null;
     playerO = null;
     activePlayer = null;
+    winner = null;
   }
 
   return {
@@ -69,6 +109,8 @@ const players = (function () {
     getPlayer,
     getActivePlayer,
     toggleActivePlayer,
+    setWinner,
+    getWinner,
     reset,
   };
 })();
@@ -116,6 +158,25 @@ const displayController = (function () {
     playerONameInputHandle.value = "";
   }
 
+  function setWinner(player) {
+    playerXNameHandle.classList.remove("active");
+    playerONameHandle.classList.remove("active");
+    gameBoardHandle.classList.add("disabled");
+    if (player.char === "X") {
+      playerXNameHandle.classList.add("winner");
+      playerONameHandle.classList.add("loser");
+    } else if (player.char === "O") {
+      playerONameHandle.classList.add("winner");
+      playerXNameHandle.classList.add("loser");
+    }
+  }
+
+  function setDraw() {
+    playerXNameHandle.classList.add("active");
+    playerONameHandle.classList.add("active");
+    gameBoardHandle.classList.add("disabled");
+  }
+
   function reset() {
     playerXNameHandle.textContent = "";
     playerONameHandle.textContent = "";
@@ -125,7 +186,11 @@ const displayController = (function () {
     }
 
     playerXNameHandle.classList.remove("active");
+    playerXNameHandle.classList.remove("winner");
+    playerXNameHandle.classList.remove("loser");
     playerONameHandle.classList.remove("active");
+    playerONameHandle.classList.remove("winner");
+    playerONameHandle.classList.remove("loser");
     setGameState(0);
   }
 
@@ -135,6 +200,8 @@ const displayController = (function () {
     toggleActivePlayer,
     updateBoard,
     clearInputs,
+    setWinner,
+    setDraw,
     reset,
   };
 })();
@@ -165,6 +232,13 @@ const game = (function () {
     displayController.updateBoard();
     players.toggleActivePlayer();
     displayController.toggleActivePlayer();
+
+    gameBoard.checkWin();
+    if (players.getWinner()) {
+      displayController.setWinner(players.getWinner());
+    }
+
+    gameBoard.checkDraw();
   }
 
   function reset() {

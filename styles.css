@@ -69,6 +69,14 @@ button {
   background-color: var(--color-blue);
 }
 
+.info-bar > .winner {
+  background-color: var(--color-green);
+}
+
+.info-bar > .loser {
+  background-color: var(--color-red);
+}
+
 .reset-button {
   font-size: 30px;
   padding: 10px 30px;
@@ -118,7 +126,7 @@ button {
 }
 
 .side-bar > form > label {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: bold;
   margin-bottom: 10px;
 }
